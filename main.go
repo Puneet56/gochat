@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -53,20 +52,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	var out bytes.Buffer
-	heading := lipgloss.NewStyle().Bold(true).Render("Welcome to the chat! \n\n")
-	out.WriteString(heading)
+	heading := lipgloss.NewStyle().Bold(true).PaddingBottom(1).Render("Welcome to the chat!")
 
+	messages := make([]string, 0)
 	for _, message := range m.messages {
-		out.WriteString(message.msg + "\n")
+		messages = append(messages, message.msg)
 	}
 
-	out.WriteString("\n\n")
-	out.WriteString("----------------------------------\n")
+	seperator := lipgloss.NewStyle().Render("------------------------------------")
 
-	out.WriteString(m.promt)
+	prompt := lipgloss.NewStyle().Render(m.promt)
 
-	return out.String()
+	return lipgloss.JoinVertical(lipgloss.Top, heading, lipgloss.JoinVertical(lipgloss.Top, messages...), seperator, prompt)
 }
 
 func main() {
