@@ -1,11 +1,15 @@
-package chat
+// Package server provides the server for the chat application
+package server
 
 import (
 	"context"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 )
 
 type User struct {
@@ -64,8 +68,21 @@ func Start() {
 		}
 	}()
 
-	wg.Wait()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		fmt.Println("Shutting down...")
+		close(userChan)
+		close(brodcastChan)
+		cancel()
 
+		<-c
+		fmt.Println("Forced shutdown")
+		os.Exit(0)
+	}()
+
+	wg.Wait()
 	fmt.Println("Server closed")
 }
 
@@ -81,6 +98,7 @@ func startServer(wg *sync.WaitGroup, ctx context.Context, port string) {
 		case <-ctx.Done():
 			return
 		default:
+			// TODO: fix shutdown bug here. Accept waits
 			conn, err := listner.Accept()
 			if err != nil {
 				panic(err)

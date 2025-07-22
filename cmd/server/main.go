@@ -1,7 +1,7 @@
 package main
 
-import "gochat/chat"
+import "gochat/server"
 
 func main() {
-	chat.Start()
+	server.Start()
 }
